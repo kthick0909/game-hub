@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import apiClient from "../services/api-client";
+import { FetchResponse } from "../services/api-client";
 import genres from "../data/genres";
 
 export interface Genre {
@@ -6,36 +9,13 @@ export interface Genre {
   image_background: string;
 }
 
-//   interface FetchGenresResponse {
-//     count: number;
-//     results: Genre[];
-//   }
-
-// const useGenres = () => {
-//   const [genres, setGenres] = useState<Genre[]>([]);
-//   const [error, setError] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   useEffect(() => {
-//     const controller = new AbortController();
-//     setIsLoading(true);
-//     apiClient
-//       .get<FetchGenresResponse>("/genres", { signal: controller.signal })
-//       .then((res) => {
-//         setGenres(res.data.results);
-//         setIsLoading(false);
-//       })
-//       .catch((err) => {
-//         setError(err.message);
-//         setIsLoading(false);
-//       });
-
-//     return () => controller.abort();
-//   }, []);
-
-//   return { genres, error, isLoading };
-// };
-
-const useGenres = () => ({ data: genres, error: null, isLoading: false });
+const useGenres = () =>
+  useQuery({
+    queryKey: ["genres"],
+    queryFn: () =>
+      apiClient.get<FetchResponse<Genre>>("/genres").then((res) => res.data),
+    staleTime: 24 * 60 * 60 * 1000,
+    initialData: { count: genres.length, results: genres },
+  });
 
 export default useGenres;
